@@ -10,10 +10,7 @@ import kotlinx.coroutines.flow.update
 
 class LearnVaultViewModel : ViewModel() {
 
-    // 1. PRIVATE MUTABLE STATE: Only the ViewModel can change this.
     private val _uiState = MutableStateFlow(LearnVaultUiState())
-
-    // 2. PUBLIC READ-ONLY STATE: The UI observes this.
     val uiState: StateFlow<LearnVaultUiState> = _uiState.asStateFlow()
 
     init {
@@ -21,12 +18,37 @@ class LearnVaultViewModel : ViewModel() {
     }
 
     private fun loadLibraryData() {
-        // In Sprint 4, we are still using static local data.
-        // We push SampleData into our StateFlow so the UI can react to it.
         _uiState.update { currentState ->
             currentState.copy(
                 chapters = SampleData.chapterList
             )
+        }
+    }
+
+    // NEW: Event handler for toggling topic completion
+    fun toggleTopicCompletion(topicId: String) {
+        _uiState.update { currentState ->
+            // Create a completely new list of chapters
+            val updatedChapters = currentState.chapters.map { chapter ->
+                // Check if this chapter contains the topic we are looking for
+                if (chapter.topics.any { it.id == topicId }) {
+                    // Create a new list of topics for this specific chapter
+                    val updatedTopics = chapter.topics.map { topic ->
+                        if (topic.id == topicId) {
+                            // Copy the topic and flip its completion boolean
+                            topic.copy(isCompleted = !topic.isCompleted)
+                        } else {
+                            topic // Leave other topics untouched
+                        }
+                    }
+                    // Copy the chapter with the new topics list
+                    chapter.copy(topics = updatedTopics)
+                } else {
+                    chapter // Leave other chapters untouched
+                }
+            }
+            // Update the state with our new immutable chapter list
+            currentState.copy(chapters = updatedChapters)
         }
     }
 }

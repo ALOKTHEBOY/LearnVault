@@ -13,6 +13,12 @@ fun ChapterCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // DERIVED STATE: Calculated purely from the provided chapter data
+    val totalTopics = chapter.topics.size
+    val completedTopics = chapter.topics.count { it.isCompleted }
+    // Prevent division by zero if a chapter is empty
+    val progress = if (totalTopics > 0) completedTopics.toFloat() / totalTopics else 0f
+
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
@@ -31,9 +37,16 @@ fun ChapterCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "${chapter.topics.size} Topics available",
+                text = "$completedTopics / $totalTopics topics completed",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.2f)
             )
         }
     }

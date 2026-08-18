@@ -3,6 +3,8 @@ package com.example.learnvault.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,7 +18,8 @@ import com.example.learnvault.ui.components.LearnVaultTopAppBar
 fun TopicDetailScreen(
     topic: Topic,
     chapterTitle: String,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onToggleCompletion: () -> Unit // NEW: Callback to notify the parent when clicked
 ) {
     Scaffold(
         topBar = {
@@ -32,7 +35,7 @@ fun TopicDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp) // Normalized padding
+                .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -56,7 +59,7 @@ fun TopicDetailScreen(
                 )
                 Text(
                     text = topic.explanation,
-                    style = MaterialTheme.typography.bodyLarge, // Line height is now handled automatically by the theme
+                    style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -70,6 +73,23 @@ fun TopicDetailScreen(
                         fontWeight = FontWeight.Bold
                     )
                     CodeBlock(code = topic.codeSnippet)
+                }
+            }
+
+            // NEW: Completion Toggle Button
+            Button(
+                onClick = onToggleCompletion,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (topic.isCompleted) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                )
+            ) {
+                if (topic.isCompleted) {
+                    Icon(imageVector = Icons.Filled.Check, contentDescription = "Completed")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Completed")
+                } else {
+                    Text("Mark as Complete")
                 }
             }
 

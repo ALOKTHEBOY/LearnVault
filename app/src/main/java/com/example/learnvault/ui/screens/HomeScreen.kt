@@ -16,6 +16,11 @@ fun HomeScreen(
     chapters: List<Chapter>,
     onChapterClick: (String) -> Unit
 ) {
+    // DERIVED STATE: Global Library Progress
+    val totalTopics = chapters.sumOf { it.topics.size }
+    val completedTopics = chapters.sumOf { chapter -> chapter.topics.count { it.isCompleted } }
+    val progress = if (totalTopics > 0) completedTopics.toFloat() / totalTopics else 0f
+
     Scaffold(
         topBar = {
             LearnVaultTopAppBar(title = "LearnVault Library")
@@ -36,12 +41,33 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-                Text(
-                    text = "Select a chapter to begin exploring topics.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
+
+                // NEW: Global Progress Summary
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Overall Progress",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "$completedTopics of $totalTopics topics completed",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
+                        )
+                    }
+                }
             }
 
             items(chapters) { chapter ->

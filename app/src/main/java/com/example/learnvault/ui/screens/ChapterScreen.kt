@@ -18,6 +18,11 @@ fun ChapterScreen(
     onNavigateBack: () -> Unit,
     onTopicClick: (String) -> Unit
 ) {
+    // DERIVED STATE
+    val totalTopics = chapter.topics.size
+    val completedTopics = chapter.topics.count { it.isCompleted }
+    val progress = if (totalTopics > 0) completedTopics.toFloat() / totalTopics else 0f
+
     Scaffold(
         topBar = {
             LearnVaultTopAppBar(
@@ -45,10 +50,17 @@ fun ChapterScreen(
                 )
 
                 Text(
-                    text = "${chapter.topics.size} Topics in this chapter",
+                    text = "$completedTopics of $totalTopics topics completed",
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                // NEW: Chapter Progress Indicator
+                LinearProgressIndicator(
+                    progress = { progress },
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    color = MaterialTheme.colorScheme.primary,
                 )
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

@@ -105,7 +105,9 @@ fun LearnVaultApp(
                 TopicDetailScreen(
                     topic = topic,
                     chapterTitle = chapter.title,
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    // NEW: We pass the event up to the ViewModel!
+                    onToggleCompletion = { viewModel.toggleTopicCompletion(topic.id) }
                 )
             } else {
                 NotFoundScreen(onNavigateBack = { navController.popBackStack() })
