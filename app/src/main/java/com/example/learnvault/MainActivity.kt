@@ -7,19 +7,22 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.learnvault.model.SampleData
 import com.example.learnvault.ui.screens.ChapterScreen
 import com.example.learnvault.ui.screens.HomeScreen
 import com.example.learnvault.ui.screens.TopicDetailScreen
 import com.example.learnvault.ui.theme.LearnVaultTheme
+import com.example.learnvault.ui.viewmodel.LearnVaultViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,28 +42,37 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun LearnVaultApp() {
+fun LearnVaultApp(
+    // 1. We inject the ViewModel here. The viewModel() function automatically
+    // creates it or retrieves the existing one if the screen rotates.
+    viewModel: LearnVaultViewModel = viewModel()
+) {
     val navController = rememberNavController()
+
+    // 2. OBSERVE STATE: We collect the StateFlow as Compose State.
+    // If the ViewModel ever updates the state, this composable will automatically recompose!
+    val uiState by viewModel.uiState.collectAsState()
 
     NavHost(navController = navController, startDestination = "home") {
 
-        // ROUTE 1: Home Screen
         composable("home") {
             HomeScreen(
-                chapters = SampleData.chapterList,
+                // 3. We pass data from our observed state, NOT from SampleData directly
+                chapters = uiState.chapters,
                 onChapterClick = { chapterId ->
                     navController.navigate("chapter/$chapterId")
                 }
             )
         }
 
-        // ROUTE 2: Chapter Screen
         composable(
             route = "chapter/{chapterId}",
             arguments = listOf(navArgument("chapterId") { type = NavType.StringType })
         ) { backStackEntry ->
             val chapterId = backStackEntry.arguments?.getString("chapterId")
-            val chapter = SampleData.chapterList.find { it.id == chapterId }
+
+            // 4. Lookups are now performed against the uiState
+            val chapter = uiState.chapters.find { it.id == chapterId }
 
             if (chapter != null) {
                 ChapterScreen(
@@ -71,12 +83,10 @@ fun LearnVaultApp() {
                     }
                 )
             } else {
-                // FALLBACK: Chapter not found
                 NotFoundScreen(onNavigateBack = { navController.popBackStack() })
             }
         }
 
-        // ROUTE 3: Topic Detail Screen
         composable(
             route = "topic/{chapterId}/{topicId}",
             arguments = listOf(
@@ -87,7 +97,8 @@ fun LearnVaultApp() {
             val chapterId = backStackEntry.arguments?.getString("chapterId")
             val topicId = backStackEntry.arguments?.getString("topicId")
 
-            val chapter = SampleData.chapterList.find { it.id == chapterId }
+            // 5. Lookups are now performed against the uiState
+            val chapter = uiState.chapters.find { it.id == chapterId }
             val topic = chapter?.topics?.find { it.id == topicId }
 
             if (chapter != null && topic != null) {
@@ -97,16 +108,12 @@ fun LearnVaultApp() {
                     onNavigateBack = { navController.popBackStack() }
                 )
             } else {
-                // FALLBACK: Topic not found
                 NotFoundScreen(onNavigateBack = { navController.popBackStack() })
             }
         }
     }
 }
 
-// ---------------------------------------------------------------------------
-// NEW REUSABLE FALLBACK UI
-// ---------------------------------------------------------------------------
 @Composable
 fun NotFoundScreen(onNavigateBack: () -> Unit) {
     Column(
