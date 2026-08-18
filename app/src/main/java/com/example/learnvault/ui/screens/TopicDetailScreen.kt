@@ -8,6 +8,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.learnvault.model.Topic
 import com.example.learnvault.ui.components.CodeBlock
@@ -16,12 +17,27 @@ import com.example.learnvault.ui.components.CodeBlock
 @Composable
 fun TopicDetailScreen(
     topic: Topic,
+    chapterTitle: String, // Added to provide breadcrumb context
     onNavigateBack: () -> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(topic.title) },
+                title = {
+                    Column {
+                        // Breadcrumb showing the parent chapter
+                        Text(
+                            text = chapterTitle,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
+                        // The actual topic title
+                        Text(
+                            text = topic.title,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -41,30 +57,52 @@ fun TopicDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(horizontal = 24.dp) // Wider padding for comfortable reading
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // INTRODUCTION
             Text(
                 text = topic.shortDescription,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.secondary
             )
 
-            Text(
-                text = topic.explanation,
-                style = MaterialTheme.typography.bodyLarge
-            )
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // Only show the CodeBlock if there is actual code to display
-            if (topic.codeSnippet != null) {
+            // CORE CONCEPT SECTION
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = "Example:",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary
+                    text = "CORE CONCEPT",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
                 )
-                CodeBlock(code = topic.codeSnippet)
+                Text(
+                    text = topic.explanation,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2f // Increased line height for readability
+                )
             }
+
+            // CONDITIONAL EXAMPLE SECTION
+            if (topic.codeSnippet != null) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "EXAMPLE",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    CodeBlock(code = topic.codeSnippet)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp)) // Extra padding at the bottom of the scrollable area
         }
     }
 }

@@ -8,18 +8,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.learnvault.model.Chapter
-import com.example.learnvault.ui.components.TopicCard
+import com.example.learnvault.ui.components.ChapterCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     chapters: List<Chapter>,
-    onTopicClick: (String) -> Unit
+    onChapterClick: (String) -> Unit // Notice this changed from onTopicClick!
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("LearnVault") },
+                title = { Text("LearnVault Library") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -35,24 +35,28 @@ fun HomeScreen(
             contentPadding = PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            chapters.forEach { chapter ->
-                // Chapter Title
-                item {
-                    Text(
-                        text = chapter.title,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 4.dp, top = 8.dp)
-                    )
-                }
+            // New Welcome Header
+            item {
+                Text(
+                    text = "Your Learning Journey",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "Select a chapter to begin exploring topics.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
 
-                // Topics within the Chapter
-                items(chapter.topics) { topic ->
-                    TopicCard(
-                        topic = topic,
-                        onClick = { onTopicClick(topic.id) }
-                    )
-                }
+            // Simplified Chapter List
+            items(chapters) { chapter ->
+                ChapterCard(
+                    chapter = chapter,
+                    onClick = { onChapterClick(chapter.id) }
+                )
             }
         }
     }
