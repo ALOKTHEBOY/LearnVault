@@ -3,17 +3,15 @@ package com.example.learnvault.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.learnvault.model.Chapter
+import com.example.learnvault.ui.components.LearnVaultTopAppBar
 import com.example.learnvault.ui.components.TopicCard
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChapterScreen(
     chapter: Chapter,
@@ -22,20 +20,10 @@ fun ChapterScreen(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Chapter Overview") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Navigate back"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+            LearnVaultTopAppBar(
+                title = "Chapter Overview",
+                canNavigateBack = true,
+                onNavigateBack = onNavigateBack
             )
         }
     ) { paddingValues ->
@@ -47,7 +35,6 @@ fun ChapterScreen(
             contentPadding = PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Chapter Header Section
             item {
                 Text(
                     text = chapter.title,
@@ -69,7 +56,6 @@ fun ChapterScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            // List of Topics
             items(chapter.topics) { topic ->
                 TopicCard(
                     topic = topic,

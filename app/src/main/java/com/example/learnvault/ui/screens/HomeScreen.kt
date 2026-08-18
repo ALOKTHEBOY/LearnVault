@@ -9,22 +9,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.learnvault.model.Chapter
 import com.example.learnvault.ui.components.ChapterCard
+import com.example.learnvault.ui.components.LearnVaultTopAppBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     chapters: List<Chapter>,
-    onChapterClick: (String) -> Unit // Notice this changed from onTopicClick!
+    onChapterClick: (String) -> Unit
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("LearnVault Library") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
+            LearnVaultTopAppBar(title = "LearnVault Library")
         }
     ) { paddingValues ->
         LazyColumn(
@@ -35,7 +29,6 @@ fun HomeScreen(
             contentPadding = PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // New Welcome Header
             item {
                 Text(
                     text = "Your Learning Journey",
@@ -51,7 +44,6 @@ fun HomeScreen(
                 )
             }
 
-            // Simplified Chapter List
             items(chapters) { chapter ->
                 ChapterCard(
                     chapter = chapter,

@@ -4,11 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -39,10 +40,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun LearnVaultApp() {
-    // 1. Create a NavController to command the navigation
     val navController = rememberNavController()
 
-    // 2. Set up the NavHost with our starting screen
     NavHost(navController = navController, startDestination = "home") {
 
         // ROUTE 1: Home Screen
@@ -56,7 +55,6 @@ fun LearnVaultApp() {
         }
 
         // ROUTE 2: Chapter Screen
-        // We expect a chapterId in the route so we know which data to load
         composable(
             route = "chapter/{chapterId}",
             arguments = listOf(navArgument("chapterId") { type = NavType.StringType })
@@ -67,12 +65,14 @@ fun LearnVaultApp() {
             if (chapter != null) {
                 ChapterScreen(
                     chapter = chapter,
-                    onNavigateBack = { navController.popBackStack() }, // Goes back 1 step
+                    onNavigateBack = { navController.popBackStack() },
                     onTopicClick = { topicId ->
-                        // Pass both IDs so the detail screen knows the parent chapter
                         navController.navigate("topic/$chapterId/$topicId")
                     }
                 )
+            } else {
+                // FALLBACK: Chapter not found
+                NotFoundScreen(onNavigateBack = { navController.popBackStack() })
             }
         }
 
@@ -87,17 +87,48 @@ fun LearnVaultApp() {
             val chapterId = backStackEntry.arguments?.getString("chapterId")
             val topicId = backStackEntry.arguments?.getString("topicId")
 
-            // Look up the specific data
             val chapter = SampleData.chapterList.find { it.id == chapterId }
             val topic = chapter?.topics?.find { it.id == topicId }
 
             if (chapter != null && topic != null) {
                 TopicDetailScreen(
                     topic = topic,
-                    chapterTitle = chapter.title, // Supplying the breadcrumb!
+                    chapterTitle = chapter.title,
                     onNavigateBack = { navController.popBackStack() }
                 )
+            } else {
+                // FALLBACK: Topic not found
+                NotFoundScreen(onNavigateBack = { navController.popBackStack() })
             }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// NEW REUSABLE FALLBACK UI
+// ---------------------------------------------------------------------------
+@Composable
+fun NotFoundScreen(onNavigateBack: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Content not found",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.error
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "The learning material you are looking for is missing or invalid.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = onNavigateBack) {
+            Text("Go Back")
         }
     }
 }
