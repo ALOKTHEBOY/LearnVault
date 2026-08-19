@@ -42,22 +42,27 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun LearnVaultApp(
-    // 1. We inject the ViewModel here. The viewModel() function automatically
-    // creates it or retrieves the existing one if the screen rotates.
-    viewModel: LearnVaultViewModel = viewModel()
-) {
-    val navController = rememberNavController()
+fun LearnVaultApp() {
+    val context = androidx.compose.ui.platform.LocalContext.current
 
-    // 2. OBSERVE STATE: We collect the StateFlow as Compose State.
-    // If the ViewModel ever updates the state, this composable will automatically recompose!
+    // 1. We create a custom Factory to build our ViewModel
+    val viewModel: LearnVaultViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                // Fetch the repository from our Application class
+                val application = context.applicationContext as LearnVaultApplication
+                return LearnVaultViewModel(application.repository) as T
+            }
+        }
+    )
+
+    val navController = rememberNavController()
     val uiState by viewModel.uiState.collectAsState()
 
     NavHost(navController = navController, startDestination = "home") {
 
         composable("home") {
             HomeScreen(
-                // 3. We pass data from our observed state, NOT from SampleData directly
                 chapters = uiState.chapters,
                 onChapterClick = { chapterId ->
                     navController.navigate("chapter/$chapterId")
@@ -70,8 +75,6 @@ fun LearnVaultApp(
             arguments = listOf(navArgument("chapterId") { type = NavType.StringType })
         ) { backStackEntry ->
             val chapterId = backStackEntry.arguments?.getString("chapterId")
-
-            // 4. Lookups are now performed against the uiState
             val chapter = uiState.chapters.find { it.id == chapterId }
 
             if (chapter != null) {
@@ -97,7 +100,6 @@ fun LearnVaultApp(
             val chapterId = backStackEntry.arguments?.getString("chapterId")
             val topicId = backStackEntry.arguments?.getString("topicId")
 
-            // 5. Lookups are now performed against the uiState
             val chapter = uiState.chapters.find { it.id == chapterId }
             val topic = chapter?.topics?.find { it.id == topicId }
 
@@ -106,7 +108,6 @@ fun LearnVaultApp(
                     topic = topic,
                     chapterTitle = chapter.title,
                     onNavigateBack = { navController.popBackStack() },
-                    // NEW: We pass the event up to the ViewModel!
                     onToggleCompletion = { viewModel.toggleTopicCompletion(topic.id) }
                 )
             } else {
