@@ -18,9 +18,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.learnvault.model.Chapter
+import com.example.learnvault.model.Topic
 import com.example.learnvault.ui.screens.ChapterScreen
 import com.example.learnvault.ui.screens.HomeScreen
 import com.example.learnvault.ui.screens.TopicDetailScreen
+import com.example.learnvault.ui.state.LearnVaultUiState
 import com.example.learnvault.ui.theme.LearnVaultTheme
 import com.example.learnvault.ui.viewmodel.LearnVaultViewModel
 
@@ -66,6 +69,10 @@ fun LearnVaultApp() {
                 chapters = uiState.chapters,
                 onChapterClick = { chapterId ->
                     navController.navigate("chapter/$chapterId")
+                },
+                // NEW: Route directly to a specific topic from the Home screen!
+                onTopicClick = { chapterId, topicId ->
+                    navController.navigate("topic/$chapterId/$topicId")
                 }
             )
         }
@@ -75,7 +82,7 @@ fun LearnVaultApp() {
             arguments = listOf(navArgument("chapterId") { type = NavType.StringType })
         ) { backStackEntry ->
             val chapterId = backStackEntry.arguments?.getString("chapterId")
-            val chapter = uiState.chapters.find { it.id == chapterId }
+            val chapter = uiState.chapters.find { it: Chapter -> it.id == chapterId }
 
             if (chapter != null) {
                 ChapterScreen(
@@ -100,15 +107,17 @@ fun LearnVaultApp() {
             val chapterId = backStackEntry.arguments?.getString("chapterId")
             val topicId = backStackEntry.arguments?.getString("topicId")
 
-            val chapter = uiState.chapters.find { it.id == chapterId }
-            val topic = chapter?.topics?.find { it.id == topicId }
+            val chapter = uiState.chapters.find { it: Chapter -> it.id == chapterId }
+            val topic = chapter?.topics?.find { it: Topic -> it.id == topicId }
 
             if (chapter != null && topic != null) {
                 TopicDetailScreen(
                     topic = topic,
                     chapterTitle = chapter.title,
                     onNavigateBack = { navController.popBackStack() },
-                    onToggleCompletion = { viewModel.toggleTopicCompletion(topic.id) }
+                    onToggleCompletion = { viewModel.toggleTopicCompletion(topic.id) },
+                    onToggleBookmark = { viewModel.toggleTopicBookmark(topic.id) },
+                    onSaveNote = { noteText -> viewModel.savePersonalNote(topic.id, noteText) }
                 )
             } else {
                 NotFoundScreen(onNavigateBack = { navController.popBackStack() })

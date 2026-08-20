@@ -2,12 +2,15 @@ package com.example.learnvault.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.learnvault.data.local.TopicPersonalDataEntity
+import com.example.learnvault.data.local.TopicProgressEntity
 import com.example.learnvault.data.repository.LearnVaultRepository
 import com.example.learnvault.model.SampleData
 import com.example.learnvault.ui.state.LearnVaultUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -19,23 +22,27 @@ class LearnVaultViewModel(
     val uiState: StateFlow<LearnVaultUiState> = _uiState.asStateFlow()
 
     init {
-        // 1. Start listening to the database the moment the ViewModel is created
         viewModelScope.launch {
-            repository.getAllProgressStream().collect { progressList ->
+            // EXPLICIT TYPES ADDED HERE to fix the 24 compiler errors
+            combine(
+                repository.getAllProgressStream(),
+                repository.getAllPersonalDataStream()
+            ) { progressList: List<TopicProgressEntity>, personalDataList: List<TopicPersonalDataEntity> ->
 
-                // 2. MERGE STRATEGY: Combine static SampleData with Room progress
-                val updatedChapters = SampleData.chapterList.map { chapter ->
+                SampleData.chapterList.map { chapter ->
                     val updatedTopics = chapter.topics.map { topic ->
-                        // Look for saved progress for this specific topic in the database flow
                         val savedProgress = progressList.find { it.topicId == topic.id }
+                        val savedPersonal = personalDataList.find { it.topicId == topic.id }
 
-                        // If found, use its completion state. Otherwise, default to false.
-                        topic.copy(isCompleted = savedProgress?.isCompleted ?: false)
+                        topic.copy(
+                            isCompleted = savedProgress?.isCompleted ?: false,
+                            isBookmarked = savedPersonal?.isBookmarked ?: false,
+                            personalNote = savedPersonal?.personalNote ?: ""
+                        )
                     }
                     chapter.copy(topics = updatedTopics)
                 }
-
-                // 3. Emit the newly merged state to the UI
+            }.collect { updatedChapters ->
                 _uiState.update { currentState ->
                     currentState.copy(chapters = updatedChapters)
                 }
@@ -43,22 +50,37 @@ class LearnVaultViewModel(
         }
     }
 
-    // NEW: Event handler for toggling topic completion
+    // --- EVENT HANDLERS ---
+
     fun toggleTopicCompletion(topicId: String) {
-        // Find the current state of the topic in our UI state
-        val currentTopic = _uiState.value.chapters
-            .flatMap { it.topics }
-            .find { it.id == topicId }
-
-        if (currentTopic != null) {
-            val newStatus = !currentTopic.isCompleted
-
-            // Ask the repository to update the database asynchronously.
-            // We do NOT manually update _uiState here.
-            // The database will save, emit a new list, and our init block will catch it!
-            viewModelScope.launch {
-                repository.updateTopicProgress(topicId = topicId, isCompleted = newStatus)
-            }
+        val currentTopic = getTopicFromState(topicId) ?: return
+        viewModelScope.launch {
+            repository.updateTopicProgress(topicId = topicId, isCompleted = !currentTopic.isCompleted)
         }
     }
+
+    fun toggleTopicBookmark(topicId: String) {
+        val currentTopic = getTopicFromState(topicId) ?: return
+        viewModelScope.launch {
+            repository.updateTopicPersonalData(
+                topicId = topicId,
+                isBookmarked = !currentTopic.isBookmarked,
+                personalNote = currentTopic.personalNote
+            )
+        }
+    }
+
+    fun savePersonalNote(topicId: String, note: String) {
+        val currentTopic = getTopicFromState(topicId) ?: return
+        viewModelScope.launch {
+            repository.updateTopicPersonalData(
+                topicId = topicId,
+                isBookmarked = currentTopic.isBookmarked,
+                personalNote = note
+            )
+        }
+    }
+
+    private fun getTopicFromState(topicId: String) =
+        _uiState.value.chapters.flatMap { it.topics }.find { it.id == topicId }
 }

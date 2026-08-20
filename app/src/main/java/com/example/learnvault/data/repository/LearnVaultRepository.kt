@@ -1,19 +1,35 @@
 package com.example.learnvault.data.repository
 
+import com.example.learnvault.data.local.TopicPersonalDataDao
+import com.example.learnvault.data.local.TopicPersonalDataEntity
 import com.example.learnvault.data.local.TopicProgressDao
 import com.example.learnvault.data.local.TopicProgressEntity
 import kotlinx.coroutines.flow.Flow
 
-class LearnVaultRepository(private val topicProgressDao: TopicProgressDao) {
+class LearnVaultRepository(
+    private val topicProgressDao: TopicProgressDao,
+    private val topicPersonalDataDao: TopicPersonalDataDao // NEW DAO
+) {
 
-    // 1. OBSERVE: Exposes the reactive Flow of data from Room
-    fun getAllProgressStream(): Flow<List<TopicProgressEntity>> {
-        return topicProgressDao.getAllProgress()
-    }
+    // --- PROGRESS OPERATIONS ---
+    fun getAllProgressStream(): Flow<List<TopicProgressEntity>> =
+        topicProgressDao.getAllProgress()
 
-    // 2. UPDATE: Writes to the database off the main UI thread
     suspend fun updateTopicProgress(topicId: String, isCompleted: Boolean) {
         val entity = TopicProgressEntity(topicId = topicId, isCompleted = isCompleted)
         topicProgressDao.insertOrUpdateProgress(entity)
+    }
+
+    // --- PERSONAL DATA OPERATIONS ---
+    fun getAllPersonalDataStream(): Flow<List<TopicPersonalDataEntity>> =
+        topicPersonalDataDao.getAllPersonalData()
+
+    suspend fun updateTopicPersonalData(topicId: String, isBookmarked: Boolean, personalNote: String) {
+        val entity = TopicPersonalDataEntity(
+            topicId = topicId,
+            isBookmarked = isBookmarked,
+            personalNote = personalNote
+        )
+        topicPersonalDataDao.insertOrUpdatePersonalData(entity)
     }
 }

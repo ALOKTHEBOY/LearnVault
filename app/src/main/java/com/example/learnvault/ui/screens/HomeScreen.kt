@@ -6,20 +6,27 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.learnvault.model.Chapter
 import com.example.learnvault.ui.components.ChapterCard
 import com.example.learnvault.ui.components.LearnVaultTopAppBar
+import com.example.learnvault.ui.components.TopicCard
 
 @Composable
 fun HomeScreen(
     chapters: List<Chapter>,
-    onChapterClick: (String) -> Unit
+    onChapterClick: (String) -> Unit,
+    onTopicClick: (String, String) -> Unit // NEW: Needs chapterId and topicId to navigate directly
 ) {
-    // DERIVED STATE: Global Library Progress
     val totalTopics = chapters.sumOf { it.topics.size }
     val completedTopics = chapters.sumOf { chapter -> chapter.topics.count { it.isCompleted } }
     val progress = if (totalTopics > 0) completedTopics.toFloat() / totalTopics else 0f
+
+    // Extract all bookmarked topics across all chapters, pairing them with their chapterId
+    val bookmarkedTopics = chapters.flatMap { chapter ->
+        chapter.topics.filter { it.isBookmarked }.map { topic -> Pair(chapter.id, topic) }
+    }
 
     Scaffold(
         topBar = {
@@ -42,7 +49,6 @@ fun HomeScreen(
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
-                // NEW: Global Progress Summary
                 Card(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                     modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
@@ -68,6 +74,42 @@ fun HomeScreen(
                         )
                     }
                 }
+            }
+
+            // NEW SECTION: Bookmarked Topics
+            item {
+                Text(
+                    text = "Bookmarked Topics",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                )
+                if (bookmarkedTopics.isEmpty()) {
+                    Text(
+                        text = "No bookmarked topics yet.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            items(bookmarkedTopics) { (chapterId, topic) ->
+                TopicCard(
+                    topic = topic,
+                    onClick = { onTopicClick(chapterId, topic.id) }
+                )
+            }
+
+            item {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                Text(
+                    text = "Chapters",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
             }
 
             items(chapters) { chapter ->
