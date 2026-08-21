@@ -58,6 +58,26 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
+    // 1. Standard Local Unit Tests
+    testImplementation("junit:junit:4.13.2")
+    // Coroutines testing (for testing ViewModel and Flow)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+    // 2. Android Instrumented Tests (Runs on the Emulator)
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    // Room Testing (for testing DAOs and MIGRATION_1_2)
+    // Note: If you put Room in your libs.versions.toml, use that version (2.8.4).
+    // Otherwise, this standard string works.
+    androidTestImplementation("androidx.room:room-testing:2.8.4")
+
+    // Compose UI Testing
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.02.00")) // Use your existing BOM version if different
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+
     // Room Dependencies
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
