@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -21,10 +22,12 @@ import com.example.learnvault.ui.components.TopicCard
 fun HomeScreen(
     chapters: List<Chapter>,
     onChapterClick: (String) -> Unit,
-    onTopicClick: (String, String) -> Unit
+    onTopicClick: (String, String) -> Unit,
+    onSettingsClick: () -> Unit // NEW
 ) {
     // SEARCH UI STATE
     var searchQuery by rememberSaveable { mutableStateOf("") }
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
 
     // DERIVED PROGRESS STATE
     val totalTopics = chapters.sumOf { it.topics.size }
@@ -38,7 +41,14 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            LearnVaultTopAppBar(title = "LearnVault Library")
+            LearnVaultTopAppBar(
+                title = "LearnVault Library",
+                actions = {
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(Icons.Filled.Settings, contentDescription = "Settings")
+                    }
+                }
+            )
         }
     ) { paddingValues ->
         LazyColumn(
@@ -60,12 +70,23 @@ fun HomeScreen(
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { searchQuery = "" }) {
+                            IconButton(onClick = {
+                                searchQuery = ""
+                                focusManager.clearFocus() // NEW: Hides keyboard when clearing search
+                            }) {
                                 Icon(Icons.Filled.Clear, contentDescription = "Clear search")
                             }
                         }
                     },
                     singleLine = true,
+                    // NEW: Changes the "Enter" key on the keyboard to a "Search" magnifying glass icon
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        imeAction = androidx.compose.ui.text.input.ImeAction.Search
+                    ),
+                    // NEW: Tells the app to hide the keyboard when that Search key is pressed
+                    keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                        onSearch = { focusManager.clearFocus() }
+                    ),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.surface,
                         unfocusedContainerColor = MaterialTheme.colorScheme.surface

@@ -16,6 +16,7 @@ import com.example.learnvault.model.Topic
 import com.example.learnvault.ui.components.CodeBlock
 import com.example.learnvault.ui.components.LearnVaultTopAppBar
 import androidx.compose.runtime.saveable.rememberSaveable
+import com.example.learnvault.data.preferences.ReadingDensity
 
 @Composable
 fun TopicDetailScreen(
@@ -24,8 +25,12 @@ fun TopicDetailScreen(
     onNavigateBack: () -> Unit,
     onToggleCompletion: () -> Unit,
     onToggleBookmark: () -> Unit, // NEW callback
-    onSaveNote: (String) -> Unit  // NEW callback
+    onSaveNote: (String) -> Unit,  // NEW callback
+    readingDensity: ReadingDensity
 ) {
+    // Dynamic Spacing logic
+    val verticalSpacing = if (readingDensity == ReadingDensity.COMPACT) 12.dp else 24.dp
+
     // UPDATED: Using rememberSaveable to survive configuration changes (rotation)
     var isEditingNote by rememberSaveable { mutableStateOf(false) }
     var noteDraft by rememberSaveable(topic.personalNote) { mutableStateOf(topic.personalNote) }
@@ -47,7 +52,7 @@ fun TopicDetailScreen(
                 .padding(horizontal = 16.dp)
                 .imePadding() // <-- NEW: This pushes the screen up when the keyboard appears!
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(verticalSpacing), // DYNAMIC
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 

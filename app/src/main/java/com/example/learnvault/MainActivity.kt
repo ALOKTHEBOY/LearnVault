@@ -22,11 +22,14 @@ import com.example.learnvault.model.Chapter
 import com.example.learnvault.model.Topic
 import com.example.learnvault.ui.screens.ChapterScreen
 import com.example.learnvault.ui.screens.HomeScreen
+import com.example.learnvault.ui.screens.SettingsScreen
 import com.example.learnvault.ui.screens.TopicDetailScreen
 import com.example.learnvault.ui.state.LearnVaultUiState
 import com.example.learnvault.ui.theme.LearnVaultTheme
 import com.example.learnvault.ui.viewmodel.LearnVaultViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.learnvault.data.preferences.ThemeMode
+import com.example.learnvault.data.preferences.ReadingDensity
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,79 +52,97 @@ class MainActivity : ComponentActivity() {
 fun LearnVaultApp() {
     val context = androidx.compose.ui.platform.LocalContext.current
 
-    // 1. We create a custom Factory to build our ViewModel
     val viewModel: LearnVaultViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
         factory = object : androidx.lifecycle.ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                // Fetch the repository from our Application class
                 val application = context.applicationContext as LearnVaultApplication
                 return LearnVaultViewModel(application.repository) as T
             }
         }
     )
 
-    val navController = rememberNavController()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    NavHost(navController = navController, startDestination = "home") {
+    val isDarkTheme = when (uiState.userPreferences.themeMode) {
+        ThemeMode.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
 
-        composable("home") {
-            HomeScreen(
-                chapters = uiState.chapters,
-                onChapterClick = { chapterId ->
-                    navController.navigate("chapter/$chapterId")
-                },
-                // NEW: Route directly to a specific topic from the Home screen!
-                onTopicClick = { chapterId, topicId ->
-                    navController.navigate("topic/$chapterId/$topicId")
+    LearnVaultTheme(darkTheme = isDarkTheme) {
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            val navController = rememberNavController()
+
+            NavHost(navController = navController, startDestination = "home") {
+                composable("home") {
+                    HomeScreen(
+                        chapters = uiState.chapters,
+                        onChapterClick = { chapterId ->
+                            navController.navigate("chapter/$chapterId")
+                        },
+                        onTopicClick = { chapterId, topicId ->
+                            navController.navigate("topic/$chapterId/$topicId")
+                        },
+                        onSettingsClick = { navController.navigate("settings") }
+                    )
                 }
-            )
-        }
 
-        composable(
-            route = "chapter/{chapterId}",
-            arguments = listOf(navArgument("chapterId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val chapterId = backStackEntry.arguments?.getString("chapterId")
-            val chapter = uiState.chapters.find { it: Chapter -> it.id == chapterId }
+                composable("settings") {
+                    SettingsScreen(
+                        userPreferences = uiState.userPreferences,
+                        onThemeChange = { viewModel.updateThemeMode(it) },
+                        onDensityChange = { viewModel.updateReadingDensity(it) },
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
 
-            if (chapter != null) {
-                ChapterScreen(
-                    chapter = chapter,
-                    onNavigateBack = { navController.popBackStack() },
-                    onTopicClick = { topicId ->
-                        navController.navigate("topic/$chapterId/$topicId")
+                composable(
+                    route = "chapter/{chapterId}",
+                    arguments = listOf(navArgument("chapterId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val chapterId = backStackEntry.arguments?.getString("chapterId")
+                    val chapter = uiState.chapters.find { it.id == chapterId }
+
+                    if (chapter != null) {
+                        ChapterScreen(
+                            chapter = chapter,
+                            onNavigateBack = { navController.popBackStack() },
+                            onTopicClick = { topicId ->
+                                navController.navigate("topic/$chapterId/$topicId")
+                            }
+                        )
+                    } else {
+                        NotFoundScreen(onNavigateBack = { navController.popBackStack() })
                     }
-                )
-            } else {
-                NotFoundScreen(onNavigateBack = { navController.popBackStack() })
-            }
-        }
+                }
 
-        composable(
-            route = "topic/{chapterId}/{topicId}",
-            arguments = listOf(
-                navArgument("chapterId") { type = NavType.StringType },
-                navArgument("topicId") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val chapterId = backStackEntry.arguments?.getString("chapterId")
-            val topicId = backStackEntry.arguments?.getString("topicId")
+                composable(
+                    route = "topic/{chapterId}/{topicId}",
+                    arguments = listOf(
+                        navArgument("chapterId") { type = NavType.StringType },
+                        navArgument("topicId") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val chapterId = backStackEntry.arguments?.getString("chapterId")
+                    val topicId = backStackEntry.arguments?.getString("topicId")
 
-            val chapter = uiState.chapters.find { it: Chapter -> it.id == chapterId }
-            val topic = chapter?.topics?.find { it: Topic -> it.id == topicId }
+                    val chapter = uiState.chapters.find { it.id == chapterId }
+                    val topic = chapter?.topics?.find { it.id == topicId }
 
-            if (chapter != null && topic != null) {
-                TopicDetailScreen(
-                    topic = topic,
-                    chapterTitle = chapter.title,
-                    onNavigateBack = { navController.popBackStack() },
-                    onToggleCompletion = { viewModel.toggleTopicCompletion(topic.id) },
-                    onToggleBookmark = { viewModel.toggleTopicBookmark(topic.id) },
-                    onSaveNote = { noteText -> viewModel.savePersonalNote(topic.id, noteText) }
-                )
-            } else {
-                NotFoundScreen(onNavigateBack = { navController.popBackStack() })
+                    if (chapter != null && topic != null) {
+                        TopicDetailScreen(
+                            topic = topic,
+                            chapterTitle = chapter.title,
+                            onNavigateBack = { navController.popBackStack() },
+                            onToggleCompletion = { viewModel.toggleTopicCompletion(topic.id) },
+                            onToggleBookmark = { viewModel.toggleTopicBookmark(topic.id) },
+                            onSaveNote = { noteText -> viewModel.savePersonalNote(topic.id, noteText) },
+                            readingDensity = uiState.userPreferences.readingDensity // NEW
+                        )
+                    } else {
+                        NotFoundScreen(onNavigateBack = { navController.popBackStack() })
+                    }
+                }
             }
         }
     }

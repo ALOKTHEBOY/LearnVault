@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.learnvault.data.local.TopicPersonalDataEntity
 import com.example.learnvault.data.local.TopicProgressEntity
+import com.example.learnvault.data.preferences.ReadingDensity
+import com.example.learnvault.data.preferences.ThemeMode
 import com.example.learnvault.data.repository.LearnVaultRepository
 import com.example.learnvault.model.SampleData
 import com.example.learnvault.ui.state.LearnVaultUiState
@@ -23,13 +25,13 @@ class LearnVaultViewModel(
 
     init {
         viewModelScope.launch {
-            // EXPLICIT TYPES ADDED HERE to fix the 24 compiler errors
             combine(
                 repository.getAllProgressStream(),
-                repository.getAllPersonalDataStream()
-            ) { progressList: List<TopicProgressEntity>, personalDataList: List<TopicPersonalDataEntity> ->
+                repository.getAllPersonalDataStream(),
+                repository.userPreferencesFlow // NEW STREAM
+            ) { progressList, personalDataList, userPrefs ->
 
-                SampleData.chapterList.map { chapter ->
+                val updatedChapters = SampleData.chapterList.map { chapter ->
                     val updatedTopics = chapter.topics.map { topic ->
                         val savedProgress = progressList.find { it.topicId == topic.id }
                         val savedPersonal = personalDataList.find { it.topicId == topic.id }
@@ -42,10 +44,12 @@ class LearnVaultViewModel(
                     }
                     chapter.copy(topics = updatedTopics)
                 }
-            }.collect { updatedChapters ->
-                _uiState.update { currentState ->
-                    currentState.copy(chapters = updatedChapters)
-                }
+
+                // Return a combined state object
+                LearnVaultUiState(chapters = updatedChapters, userPreferences = userPrefs)
+
+            }.collect { newState ->
+                _uiState.update { newState }
             }
         }
     }
@@ -79,6 +83,15 @@ class LearnVaultViewModel(
                 personalNote = note
             )
         }
+    }
+
+    // --- NEW EVENT HANDLERS FOR SETTINGS ---
+    fun updateThemeMode(mode: ThemeMode) {
+        viewModelScope.launch { repository.updateThemeMode(mode) }
+    }
+
+    fun updateReadingDensity(density: ReadingDensity) {
+        viewModelScope.launch { repository.updateReadingDensity(density) }
     }
 
     private fun getTopicFromState(topicId: String) =
