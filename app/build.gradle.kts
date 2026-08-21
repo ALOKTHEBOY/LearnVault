@@ -65,8 +65,8 @@ dependencies {
     androidTestImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     // 2. Android Instrumented Tests (Runs on the Emulator)
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 
     // Room Testing (for testing DAOs and MIGRATION_1_2)
     // Note: If you put Room in your libs.versions.toml, use that version (2.8.4).
@@ -74,7 +74,7 @@ dependencies {
     androidTestImplementation("androidx.room:room-testing:2.8.4")
 
     // Compose UI Testing
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.02.00")) // Use your existing BOM version if different
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.02.01")) // Use your existing BOM version if different
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 

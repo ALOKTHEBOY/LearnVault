@@ -9,7 +9,13 @@ object SampleData {
                 id = "top_1_1",
                 title = "What is Android?",
                 shortDescription = "Understanding the Android OS.",
-                explanation = "Android is a mobile operating system based on a modified version of the Linux kernel and other open-source software, designed primarily for touchscreen mobile devices such as smartphones and tablets."
+                explanation = "Android is a mobile operating system based on a modified version of the Linux kernel and other open-source software, designed primarily for touchscreen mobile devices such as smartphones and tablets.",
+                // NEW: Add this list to the topic!
+                keyTakeaways = listOf(
+                    "Android is built on top of the Linux kernel.",
+                    "It is open-source and highly customizable.",
+                    "It is the most widely used mobile OS in the world."
+                )
             ),
             Topic(
                 id = "top_1_2",
@@ -39,7 +45,12 @@ object SampleData {
                     val appName: String = "LearnVault" // Immutable
                     var version: Int = 1 // Mutable
                     version = 2
-                """.trimIndent()
+                """.trimIndent(),
+                // NEW: Add this list!
+                keyTakeaways = listOf(
+                    "Always prefer 'val' over 'var' unless the value MUST change.",
+                    "Kotlin can often infer the data type automatically."
+                )
             ),
             Topic(
                 id = "top_2_2",

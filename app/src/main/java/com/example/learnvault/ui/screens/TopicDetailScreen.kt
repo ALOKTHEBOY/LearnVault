@@ -9,31 +9,32 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.learnvault.data.preferences.ReadingDensity
 import com.example.learnvault.model.Topic
 import com.example.learnvault.ui.components.CodeBlock
 import com.example.learnvault.ui.components.LearnVaultTopAppBar
-import androidx.compose.runtime.saveable.rememberSaveable
-import com.example.learnvault.data.preferences.ReadingDensity
 
 @Composable
 fun TopicDetailScreen(
     topic: Topic,
     chapterTitle: String,
+    readingDensity: ReadingDensity,
     onNavigateBack: () -> Unit,
     onToggleCompletion: () -> Unit,
-    onToggleBookmark: () -> Unit, // NEW callback
-    onSaveNote: (String) -> Unit,  // NEW callback
-    readingDensity: ReadingDensity
+    onToggleBookmark: () -> Unit,
+    onSaveNote: (String) -> Unit
 ) {
-    // Dynamic Spacing logic
-    val verticalSpacing = if (readingDensity == ReadingDensity.COMPACT) 12.dp else 24.dp
-
-    // UPDATED: Using rememberSaveable to survive configuration changes (rotation)
     var isEditingNote by rememberSaveable { mutableStateOf(false) }
     var noteDraft by rememberSaveable(topic.personalNote) { mutableStateOf(topic.personalNote) }
+
+    val verticalSpacing = if (readingDensity == ReadingDensity.COMPACT) 12.dp else 24.dp
 
     Scaffold(
         topBar = {
@@ -50,25 +51,65 @@ fun TopicDetailScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
-                .imePadding() // <-- NEW: This pushes the screen up when the keyboard appears!
+                .imePadding()
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(verticalSpacing), // DYNAMIC
+            verticalArrangement = Arrangement.spacedBy(verticalSpacing)
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = topic.shortDescription,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.secondary
-            )
+            // 1. HEADER & QUICK ACTIONS
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Text(
+                    text = topic.shortDescription,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.weight(1f).padding(end = 16.dp)
+                )
+
+                // Accessible Bookmark Icon
+                IconButton(
+                    onClick = onToggleBookmark,
+                    modifier = Modifier.semantics {
+                        contentDescription = if (topic.isBookmarked) "Remove bookmark" else "Bookmark topic"
+                    }
+                ) {
+                    Icon(
+                        imageVector = if (topic.isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // Content
+            // 2. KEY TAKEAWAYS (Only renders if the list isn't empty!)
+            if (topic.keyTakeaways.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "KEY TAKEAWAYS",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
+                    topic.keyTakeaways.forEach { takeaway ->
+                        Row(modifier = Modifier.padding(start = 8.dp)) {
+                            Text("• ", fontWeight = FontWeight.Bold)
+                            Text(text = takeaway, style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                }
+            }
+
+            // 3. MAIN EXPLANATION
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
-                    text = "CORE CONCEPT",
+                    text = "EXPLANATION",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
@@ -80,6 +121,7 @@ fun TopicDetailScreen(
                 )
             }
 
+            // 4. CODE EXAMPLE
             if (topic.codeSnippet != null) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
@@ -92,41 +134,10 @@ fun TopicDetailScreen(
                 }
             }
 
-            // Controls (Completion & Bookmark)
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 16.dp)) {
-                Button(
-                    onClick = onToggleCompletion,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (topic.isCompleted) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    if (topic.isCompleted) {
-                        Icon(imageVector = Icons.Filled.Check, contentDescription = "Completed")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Completed")
-                    } else {
-                        Text("Mark as Complete")
-                    }
-                }
-
-                OutlinedButton(
-                    onClick = onToggleBookmark,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = if (topic.isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                        contentDescription = if (topic.isBookmarked) "Remove bookmark" else "Bookmark topic"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (topic.isBookmarked) "Bookmarked" else "Add Bookmark")
-                }
-            }
-
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // PERSONAL NOTES SECTION
-            Column(modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)) {
+            // 5. PERSONAL NOTES
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "My Notes",
                     style = MaterialTheme.typography.titleMedium,
@@ -149,13 +160,13 @@ fun TopicDetailScreen(
                     ) {
                         TextButton(onClick = {
                             isEditingNote = false
-                            noteDraft = topic.personalNote // Revert changes
+                            noteDraft = topic.personalNote
                         }) {
                             Text("Cancel")
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Button(onClick = {
-                            onSaveNote(noteDraft.trimEnd()) // NEW: This instantly deletes all trailing empty lines!
+                            onSaveNote(noteDraft.trimEnd())
                             isEditingNote = false
                         }) {
                             Text("Save Note")
@@ -182,6 +193,25 @@ fun TopicDetailScreen(
                             Text("Add Note")
                         }
                     }
+                }
+            }
+
+            // 6. COMPLETION ACTION
+            Button(
+                onClick = onToggleCompletion,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (topic.isCompleted) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                )
+            ) {
+                if (topic.isCompleted) {
+                    Icon(imageVector = Icons.Filled.Check, contentDescription = "Completed")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Completed")
+                } else {
+                    Text("Mark as Complete")
                 }
             }
         }
