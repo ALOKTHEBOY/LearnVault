@@ -26,6 +26,7 @@ import com.example.learnvault.ui.screens.TopicDetailScreen
 import com.example.learnvault.ui.state.LearnVaultUiState
 import com.example.learnvault.ui.theme.LearnVaultTheme
 import com.example.learnvault.ui.viewmodel.LearnVaultViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,7 +61,7 @@ fun LearnVaultApp() {
     )
 
     val navController = rememberNavController()
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     NavHost(navController = navController, startDestination = "home") {
 

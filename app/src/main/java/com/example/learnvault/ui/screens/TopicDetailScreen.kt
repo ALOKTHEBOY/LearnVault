@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.example.learnvault.model.Topic
 import com.example.learnvault.ui.components.CodeBlock
 import com.example.learnvault.ui.components.LearnVaultTopAppBar
+import androidx.compose.runtime.saveable.rememberSaveable
 
 @Composable
 fun TopicDetailScreen(
@@ -25,9 +26,9 @@ fun TopicDetailScreen(
     onToggleBookmark: () -> Unit, // NEW callback
     onSaveNote: (String) -> Unit  // NEW callback
 ) {
-    // TEMPORARY UI STATE for the note editor
-    var isEditingNote by remember { mutableStateOf(false) }
-    var noteDraft by remember(topic.personalNote) { mutableStateOf(topic.personalNote) }
+    // UPDATED: Using rememberSaveable to survive configuration changes (rotation)
+    var isEditingNote by rememberSaveable { mutableStateOf(false) }
+    var noteDraft by rememberSaveable(topic.personalNote) { mutableStateOf(topic.personalNote) }
 
     Scaffold(
         topBar = {
