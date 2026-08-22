@@ -36,14 +36,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            LearnVaultTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    LearnVaultApp()
-                }
-            }
+            // Just call the app. The app handles its own theme now.
+            LearnVaultApp()
         }
     }
 }

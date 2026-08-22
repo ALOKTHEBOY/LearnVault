@@ -48,10 +48,7 @@ fun TopicDetailScreen(
     // Safely resolve the string URI to a real Android Drawable ID.
     // Uses the "android" package because we are using system icons for this sprint.
     val visualResId = remember(topic.visualAssetUri) {
-        topic.visualAssetUri?.let { uri ->
-            val id = context.resources.getIdentifier(uri, "drawable", "android")
-            if (id != 0) id else null
-        }
+        com.example.learnvault.ui.utils.VisualAssetResolver.resolveDrawableId(context, topic.visualAssetUri)
     }
 
     val verticalSpacing = if (readingDensity == ReadingDensity.COMPACT) 12.dp else 24.dp
