@@ -1,5 +1,6 @@
 package com.example.learnvault.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,6 +16,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +42,17 @@ fun TopicDetailScreen(
 ) {
     var isEditingNote by rememberSaveable { mutableStateOf(false) }
     var noteDraft by rememberSaveable(topic.personalNote) { mutableStateOf(topic.personalNote) }
+
+    val context = LocalContext.current
+
+    // Safely resolve the string URI to a real Android Drawable ID.
+    // Uses the "android" package because we are using system icons for this sprint.
+    val visualResId = remember(topic.visualAssetUri) {
+        topic.visualAssetUri?.let { uri ->
+            val id = context.resources.getIdentifier(uri, "drawable", "android")
+            if (id != 0) id else null
+        }
+    }
 
     val verticalSpacing = if (readingDensity == ReadingDensity.COMPACT) 12.dp else 24.dp
 
@@ -91,7 +107,28 @@ fun TopicDetailScreen(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // 2. KEY TAKEAWAYS
+            // 2. VISUAL LEARNING ASSET (NEW SPRINT 13)
+            if (visualResId != null) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 100.dp, max = 200.dp),
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Image(
+                        painter = painterResource(id = visualResId),
+                        // The accessibility description goes here for screen readers!
+                        contentDescription = topic.visualAssetDescription ?: "Visual learning asset",
+                        modifier = Modifier.padding(24.dp),
+                        contentScale = ContentScale.Fit,
+                        // Tint it so it looks beautiful in both Light and Dark mode
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                }
+            }
+
+            // 3. KEY TAKEAWAYS
             if (topic.keyTakeaways.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
@@ -109,7 +146,7 @@ fun TopicDetailScreen(
                 }
             }
 
-            // 3. EDUCATIONAL CONTEXT BLOCK (NEW SPRINT 12)
+            // 4. EDUCATIONAL CONTEXT BLOCK
             if (topic.educationalContext != null) {
                 val (icon, title, color) = when (topic.educationalContext.type) {
                     ContextType.WHY_IT_MATTERS -> Triple(Icons.Filled.Info, "Why it matters", MaterialTheme.colorScheme.tertiary)
@@ -118,7 +155,7 @@ fun TopicDetailScreen(
                 }
 
                 Surface(
-                    color = color.copy(alpha = 0.1f), // Soft tinted background
+                    color = color.copy(alpha = 0.1f),
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -143,7 +180,7 @@ fun TopicDetailScreen(
                 }
             }
 
-            // 4. MAIN EXPLANATION
+            // 5. MAIN EXPLANATION
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "EXPLANATION",
@@ -158,7 +195,7 @@ fun TopicDetailScreen(
                 )
             }
 
-            // 5. CODE EXAMPLE
+            // 6. CODE EXAMPLE
             if (topic.codeSnippet != null) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
@@ -173,7 +210,7 @@ fun TopicDetailScreen(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // 6. PERSONAL NOTES
+            // 7. PERSONAL NOTES
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "My Notes",
@@ -233,7 +270,7 @@ fun TopicDetailScreen(
                 }
             }
 
-            // 7. COMPLETION ACTION
+            // 8. COMPLETION ACTION
             Button(
                 onClick = onToggleCompletion,
                 modifier = Modifier

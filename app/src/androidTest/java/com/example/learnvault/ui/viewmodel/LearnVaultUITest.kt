@@ -87,4 +87,27 @@ class LearnVaultUITest {
         composeTestRule.onNodeWithText("KEY TAKEAWAYS").assertDoesNotExist()
         composeTestRule.onNodeWithText("EXAMPLE").assertDoesNotExist()
     }
+
+    @Test
+    fun topicDetailScreen_withVisualAsset_rendersImageAndDescription() {
+        // 1. Search for a topic we KNOW has a visual asset
+        composeTestRule.onNodeWithText("Search topics...").performTextInput("Variables")
+        composeTestRule.onNodeWithText("Storing data safely in Kotlin.", substring = true).performClick()
+
+        // 2. Verify the image is rendered by searching for its exact accessibility description
+        composeTestRule.onNodeWithContentDescription("Diagram illustrating the difference between a locked box representing an immutable 'val' and an open box representing a mutable 'var'.", substring = true).assertExists()
+    }
+
+    @Test
+    fun topicDetailScreen_withoutVisualAsset_doesNotCrash() {
+        // 1. Search for a topic we KNOW has no visual asset
+        composeTestRule.onNodeWithText("Search topics...").performTextInput("Android Studio")
+        composeTestRule.onNodeWithText("The official IDE.", substring = true).performClick()
+
+        // 2. Verify the UI still rendered successfully (proving it didn't crash on a null image)
+        composeTestRule.onNodeWithText("EXPLANATION").assertExists()
+
+        // 3. Verify the image description absolutely does not exist on this screen
+        composeTestRule.onNodeWithContentDescription("Diagram illustrating", substring = true).assertDoesNotExist()
+    }
 }

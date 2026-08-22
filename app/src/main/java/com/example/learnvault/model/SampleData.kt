@@ -29,7 +29,10 @@ object SampleData {
                     educationalContext = TopicContext(
                         type = ContextType.COMMON_MISTAKE,
                         message = "Trying to reassign a 'val' will cause a compiler error. If a value must change (like a counter), use 'var'."
-                    )
+                    ),
+                    // NEW: Visual Asset using a built-in Android drawable name
+                    visualAssetUri = "ic_menu_sort_by_size",
+                    visualAssetDescription = "Diagram illustrating the difference between a locked box representing an immutable 'val' and an open box representing a mutable 'var'."
                 ),
                 Topic(
                     id = "top_1_2",
@@ -51,15 +54,17 @@ object SampleData {
                     educationalContext = TopicContext(
                         type = ContextType.WHY_IT_MATTERS,
                         message = "Functions keep your code DRY (Don't Repeat Yourself) and make complex logic easier to test in isolation."
-                    )
+                    ),
+                    // NEW: Visual Asset
+                    visualAssetUri = "ic_menu_manage",
+                    visualAssetDescription = "Diagram showing how a Kotlin function receives inputs (parameters) and processes them to produce a specific output."
                 ),
-                // Add this right after the "Functions" topic in Chapter 1
                 Topic(
                     id = "top_1_3",
                     title = "Android Studio",
                     shortDescription = "The official IDE.",
                     explanation = "Android Studio is the official integrated development environment for Google's Android operating system."
-                    // Notice: NO keyTakeaways, NO educationalContext, NO codeSnippet
+                    // Notice: Intentionally left empty to prove topics without visuals still render perfectly!
                 )
             )
         ),
@@ -86,7 +91,10 @@ object SampleData {
                     educationalContext = TopicContext(
                         type = ContextType.REMEMBER,
                         message = "Composable functions must start with a capital letter (e.g., GreetingMessage, not greetingMessage)."
-                    )
+                    ),
+                    // NEW: Visual Asset
+                    visualAssetUri = "ic_menu_gallery",
+                    visualAssetDescription = "Diagram depicting how UI state dynamically triggers recomposition in Jetpack Compose to redraw the screen."
                 )
             )
         )

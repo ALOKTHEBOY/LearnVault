@@ -6,7 +6,6 @@ data class Chapter(
     val topics: List<Topic>
 )
 
-// NEW: Structured educational context
 enum class ContextType { WHY_IT_MATTERS, REMEMBER, COMMON_MISTAKE }
 
 data class TopicContext(
@@ -22,8 +21,12 @@ data class Topic(
     val codeSnippet: String? = null,
 
     val keyTakeaways: List<String> = emptyList(),
+
+    // VISUAL ASSET FIELDS
     val visualAssetUri: String? = null,
-    val educationalContext: TopicContext? = null, // NEW SPRINT 12 FIELD
+    val visualAssetDescription: String? = null, // NEW SPRINT 13 FIELD for accessibility
+
+    val educationalContext: TopicContext? = null,
 
     val isCompleted: Boolean = false,
     val isBookmarked: Boolean = false,
