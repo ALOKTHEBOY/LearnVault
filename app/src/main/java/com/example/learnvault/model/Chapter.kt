@@ -6,6 +6,14 @@ data class Chapter(
     val topics: List<Topic>
 )
 
+// NEW: Structured educational context
+enum class ContextType { WHY_IT_MATTERS, REMEMBER, COMMON_MISTAKE }
+
+data class TopicContext(
+    val type: ContextType,
+    val message: String
+)
+
 data class Topic(
     val id: String,
     val title: String,
@@ -13,11 +21,10 @@ data class Topic(
     val explanation: String,
     val codeSnippet: String? = null,
 
-    // NEW SPRINT 11 FIELDS
     val keyTakeaways: List<String> = emptyList(),
-    val visualAssetUri: String? = null, // Architecture placeholder for future visual content
+    val visualAssetUri: String? = null,
+    val educationalContext: TopicContext? = null, // NEW SPRINT 12 FIELD
 
-    // PERSISTENT STATE FIELDS (Handled by ViewModel merging)
     val isCompleted: Boolean = false,
     val isBookmarked: Boolean = false,
     val personalNote: String = ""

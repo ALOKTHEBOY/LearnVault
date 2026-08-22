@@ -58,26 +58,27 @@ class LearnVaultUITest {
 
     @Test
     fun topicDetailScreen_rendersOptionalContent() {
-        // 1. Search for a topic we KNOW has takeaways and code
+        // 1. Search for the updated "Variables & Mutability" topic
         composeTestRule.onNodeWithText("Search topics...").performTextInput("Variables")
 
-        // 2. Click the short description (unique to the card, so the test doesn't get confused)
-        composeTestRule.onNodeWithText("Storing data in Kotlin.", substring = true).performClick()
+        // 2. Click the NEW short description
+        composeTestRule.onNodeWithText("Storing data safely in Kotlin.", substring = true).performClick()
 
-        // 3. Verify the new hierarchy elements are displayed
-        composeTestRule.onNodeWithText("KEY TAKEAWAYS").assertIsDisplayed()
-        composeTestRule.onNodeWithText("EXPLANATION").assertIsDisplayed()
-        composeTestRule.onNodeWithText("EXAMPLE").assertIsDisplayed()
-        composeTestRule.onNodeWithText("My Notes").assertIsDisplayed()
+        // 3. Verify the new hierarchy elements are generated in the UI
+        // Use assertExists() because they might be scrolled off the bottom of the screen!
+        composeTestRule.onNodeWithText("KEY TAKEAWAYS").assertExists()
+        composeTestRule.onNodeWithText("EXPLANATION").assertExists()
+        composeTestRule.onNodeWithText("EXAMPLE").assertExists()
+        composeTestRule.onNodeWithText("My Notes").assertExists()
     }
 
     @Test
     fun topicDetailScreen_withoutOptionalContent_doesNotCrash() {
-        // 1. Search for a topic we KNOW has no takeaways or code
+        // 1. Search for the simple topic we just added back
         composeTestRule.onNodeWithText("Search topics...").performTextInput("Android Studio")
 
-        // 2. Click the short description
-        composeTestRule.onNodeWithText("The official IDE for Android.", substring = true).performClick()
+        // 2. Click its short description
+        composeTestRule.onNodeWithText("The official IDE.", substring = true).performClick()
 
         // 3. Verify it rendered the base content successfully
         composeTestRule.onNodeWithText("EXPLANATION").assertIsDisplayed()

@@ -6,6 +6,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,6 +20,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.learnvault.data.preferences.ReadingDensity
+import com.example.learnvault.model.ContextType
 import com.example.learnvault.model.Topic
 import com.example.learnvault.ui.components.CodeBlock
 import com.example.learnvault.ui.components.LearnVaultTopAppBar
@@ -71,7 +75,6 @@ fun TopicDetailScreen(
                     modifier = Modifier.weight(1f).padding(end = 16.dp)
                 )
 
-                // Accessible Bookmark Icon
                 IconButton(
                     onClick = onToggleBookmark,
                     modifier = Modifier.semantics {
@@ -88,7 +91,7 @@ fun TopicDetailScreen(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // 2. KEY TAKEAWAYS (Only renders if the list isn't empty!)
+            // 2. KEY TAKEAWAYS
             if (topic.keyTakeaways.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
@@ -106,7 +109,41 @@ fun TopicDetailScreen(
                 }
             }
 
-            // 3. MAIN EXPLANATION
+            // 3. EDUCATIONAL CONTEXT BLOCK (NEW SPRINT 12)
+            if (topic.educationalContext != null) {
+                val (icon, title, color) = when (topic.educationalContext.type) {
+                    ContextType.WHY_IT_MATTERS -> Triple(Icons.Filled.Info, "Why it matters", MaterialTheme.colorScheme.tertiary)
+                    ContextType.REMEMBER -> Triple(Icons.Filled.Star, "Remember", MaterialTheme.colorScheme.primary)
+                    ContextType.COMMON_MISTAKE -> Triple(Icons.Filled.Warning, "Common Mistake", MaterialTheme.colorScheme.error)
+                }
+
+                Surface(
+                    color = color.copy(alpha = 0.1f), // Soft tinted background
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(modifier = Modifier.padding(16.dp)) {
+                        Icon(imageVector = icon, contentDescription = title, tint = color)
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = title.uppercase(),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = color,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = topic.educationalContext.message,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 4. MAIN EXPLANATION
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = "EXPLANATION",
@@ -121,7 +158,7 @@ fun TopicDetailScreen(
                 )
             }
 
-            // 4. CODE EXAMPLE
+            // 5. CODE EXAMPLE
             if (topic.codeSnippet != null) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
@@ -136,7 +173,7 @@ fun TopicDetailScreen(
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            // 5. PERSONAL NOTES
+            // 6. PERSONAL NOTES
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "My Notes",
@@ -196,7 +233,7 @@ fun TopicDetailScreen(
                 }
             }
 
-            // 6. COMPLETION ACTION
+            // 7. COMPLETION ACTION
             Button(
                 onClick = onToggleCompletion,
                 modifier = Modifier

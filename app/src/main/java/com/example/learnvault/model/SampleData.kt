@@ -1,96 +1,94 @@
 package com.example.learnvault.model
 
 object SampleData {
-    val chapter1 = Chapter(
-        id = "chap_1",
-        title = "Chapter 1 — Android Fundamentals",
-        topics = listOf(
-            Topic(
-                id = "top_1_1",
-                title = "What is Android?",
-                shortDescription = "Understanding the Android OS.",
-                explanation = "Android is a mobile operating system based on a modified version of the Linux kernel and other open-source software, designed primarily for touchscreen mobile devices such as smartphones and tablets.",
-                // NEW: Add this list to the topic!
-                keyTakeaways = listOf(
-                    "Android is built on top of the Linux kernel.",
-                    "It is open-source and highly customizable.",
-                    "It is the most widely used mobile OS in the world."
+    val chapterList = listOf(
+        Chapter(
+            id = "chap_1",
+            title = "Chapter 1 — Kotlin Foundations",
+            topics = listOf(
+                Topic(
+                    id = "top_1_1",
+                    title = "Variables & Mutability",
+                    shortDescription = "Storing data safely in Kotlin.",
+                    explanation = "Kotlin enforces strict rules on how data changes over time. You declare variables using either 'val' (value) or 'var' (variable). A 'val' cannot be reassigned once initialized, making your code safer and more predictable. A 'var' can be reassigned as often as needed.",
+                    codeSnippet = """
+                        // Immutable (Cannot be changed)
+                        val name: String = "Android Developer"
+                        
+                        // Mutable (Can be changed)
+                        var age: Int = 25
+                        age = 26 
+                        
+                        // Type inference (Kotlin guesses the type)
+                        val language = "Kotlin"
+                    """.trimIndent(),
+                    keyTakeaways = listOf(
+                        "Always default to 'val' to prevent accidental data changes.",
+                        "Kotlin can automatically infer types, so explicit typing is optional."
+                    ),
+                    educationalContext = TopicContext(
+                        type = ContextType.COMMON_MISTAKE,
+                        message = "Trying to reassign a 'val' will cause a compiler error. If a value must change (like a counter), use 'var'."
+                    )
+                ),
+                Topic(
+                    id = "top_1_2",
+                    title = "Functions",
+                    shortDescription = "Writing reusable blocks of code.",
+                    explanation = "Functions in Kotlin are declared using the 'fun' keyword. They take parameters with explicit types and declare their return type at the end of the function signature. If a function returns nothing meaningful, its return type is 'Unit' (which can be omitted).",
+                    codeSnippet = """
+                        fun greetUser(name: String): String {
+                            return "Hello, ${'$'}name!"
+                        }
+                        
+                        // Single-expression function
+                        fun add(a: Int, b: Int) = a + b
+                    """.trimIndent(),
+                    keyTakeaways = listOf(
+                        "Parameters must always have their types explicitly declared.",
+                        "String templates allow you to embed variables directly into strings using the '$' symbol."
+                    ),
+                    educationalContext = TopicContext(
+                        type = ContextType.WHY_IT_MATTERS,
+                        message = "Functions keep your code DRY (Don't Repeat Yourself) and make complex logic easier to test in isolation."
+                    )
+                ),
+                // Add this right after the "Functions" topic in Chapter 1
+                Topic(
+                    id = "top_1_3",
+                    title = "Android Studio",
+                    shortDescription = "The official IDE.",
+                    explanation = "Android Studio is the official integrated development environment for Google's Android operating system."
+                    // Notice: NO keyTakeaways, NO educationalContext, NO codeSnippet
                 )
-            ),
-            Topic(
-                id = "top_1_2",
-                title = "Android Studio",
-                shortDescription = "The official IDE for Android.",
-                explanation = "Android Studio provides the fastest tools for building apps on every type of Android device. It includes a robust code editor, debugging tools, and a flexible build system."
-            ),
-            Topic(
-                id = "top_1_3",
-                title = "Android Project Structure",
-                shortDescription = "How an Android app is organized.",
-                explanation = "An Android project contains modules, source code files, and resource files. Key folders include 'java' for code, 'res' for UI resources, and 'manifests' for the AndroidManifest.xml file."
             )
-        )
-    )
-
-    val chapter2 = Chapter(
-        id = "chap_2",
-        title = "Chapter 2 — Kotlin Foundations",
-        topics = listOf(
-            Topic(
-                id = "top_2_1",
-                title = "Variables",
-                shortDescription = "Storing data in Kotlin.",
-                explanation = "Kotlin uses two different keywords to declare variables: 'val' for read-only (immutable) variables and 'var' for mutable variables that can be reassigned.",
-                codeSnippet = """
-                    val appName: String = "LearnVault" // Immutable
-                    var version: Int = 1 // Mutable
-                    version = 2
-                """.trimIndent(),
-                // NEW: Add this list!
-                keyTakeaways = listOf(
-                    "Always prefer 'val' over 'var' unless the value MUST change.",
-                    "Kotlin can often infer the data type automatically."
+        ),
+        Chapter(
+            id = "chap_2",
+            title = "Chapter 2 — Jetpack Compose",
+            topics = listOf(
+                Topic(
+                    id = "top_2_1",
+                    title = "What is Compose?",
+                    shortDescription = "Modern native Android UI toolkit.",
+                    explanation = "Jetpack Compose is Android’s modern declarative UI toolkit. Instead of modifying XML layouts imperatively, you describe what your UI should look like for a given state using Kotlin functions annotated with @Composable.",
+                    codeSnippet = """
+                        @Composable
+                        fun GreetingMessage(name: String) {
+                            Text(text = "Welcome to Compose, ${'$'}name!")
+                        }
+                    """.trimIndent(),
+                    keyTakeaways = listOf(
+                        "Compose is written entirely in Kotlin.",
+                        "UI updates automatically when the underlying state changes.",
+                        "Composables are just functions annotated with @Composable."
+                    ),
+                    educationalContext = TopicContext(
+                        type = ContextType.REMEMBER,
+                        message = "Composable functions must start with a capital letter (e.g., GreetingMessage, not greetingMessage)."
+                    )
                 )
-            ),
-            Topic(
-                id = "top_2_2",
-                title = "Functions",
-                shortDescription = "Reusable blocks of code.",
-                explanation = "Functions in Kotlin are declared using the 'fun' keyword. They can take parameters and return values.",
-                codeSnippet = """
-                    fun greet(name: String): String {
-                        return "Hello, ${'$'}name"
-                    }
-                """.trimIndent()
             )
         )
     )
-
-    val chapter3 = Chapter(
-        id = "chap_3",
-        title = "Chapter 3 — Jetpack Compose",
-        topics = listOf(
-            Topic(
-                id = "top_3_1",
-                title = "What is Compose?",
-                shortDescription = "Android's modern UI toolkit.",
-                explanation = "Jetpack Compose is a declarative toolkit for building native Android UI. It simplifies and accelerates UI development using Kotlin."
-            ),
-            Topic(
-                id = "top_3_2",
-                title = "Composable Functions",
-                shortDescription = "The building blocks of UI.",
-                explanation = "To create a Compose UI, you write a Kotlin function and annotate it with '@Composable'. These functions can call other composables to build a hierarchy.",
-                codeSnippet = """
-                    @Composable
-                    fun Greeting(name: String) {
-                        Text(text = "Welcome to ${'$'}name!")
-                    }
-                """.trimIndent()
-            )
-        )
-    )
-
-    // The single list that our application UI will read from
-    val chapterList = listOf(chapter1, chapter2, chapter3)
 }
